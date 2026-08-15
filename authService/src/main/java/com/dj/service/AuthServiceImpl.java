@@ -6,6 +6,7 @@ import java.util.Random;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.dj.dto.CreateUserProfileRequest;
 import com.dj.dto.LoginRequest;
 import com.dj.dto.LoginResponse;
 import com.dj.dto.OtpResponse;
@@ -30,6 +31,8 @@ public class AuthServiceImpl {
 	private final UserRepository userRepository;
 
 	private final PasswordEncoder passwordEncoder;
+
+	private final UserServiceClient userServiceClient;
 
 	private final JwtService jwtService;
 
@@ -106,6 +109,12 @@ public class AuthServiceImpl {
 				.password(passwordEncoder.encode(request.getPassword())).active(true).build();
 
 		User savedUser = userRepository.save(user);
+
+		CreateUserProfileRequest profileRequest = CreateUserProfileRequest.builder().authUserId(savedUser.getId())
+				.mobileNumber(savedUser.getMobileNumber()).firstName(savedUser.getFirstName())
+				.lastName(savedUser.getLastName()).email(savedUser.getEmail()).build();
+
+		userServiceClient.createUserProfile(profileRequest);
 
 		return RegisterResponse.builder().id(savedUser.getId()).mobileNumber(savedUser.getMobileNumber())
 				.firstName(savedUser.getFirstName()).lastName(savedUser.getLastName()).email(savedUser.getEmail())
